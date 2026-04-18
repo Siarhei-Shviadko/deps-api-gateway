@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  api-gateway:
+    env_file: ./etc/api-gateway/env/.test.env
+    volumes:
+      - test-cache:/tmp/test_cache
+      - ./vendors:/vendors
+      - ./src/deps_api_gateway:/app/deps_api_gateway
+      - ./src/tests:/app/tests
+      - ./src/poetry.lock:/app/poetry.lock
+      - ./src/pyproject.toml:/app/pyproject.toml
+      - ./src/setup.cfg:/app/setup.cfg
+
+
+volumes:
+  test-cache:

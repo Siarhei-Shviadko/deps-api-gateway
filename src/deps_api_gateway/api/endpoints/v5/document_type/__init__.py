@@ -1,0 +1,28 @@
+from fastapi import APIRouter
+
+from .cloud_native_extraction import cloud_native_extraction_router
+from .document_types import document_types_router
+from .enrichment import enrichment_router
+from .extractors import extractors_router
+from .fields import extraction_router
+from .llm_extractor import llm_extractor_router
+from .output_exporting import output_exporting_router
+from .prototype import layout_router, mapping_router, prototype_router
+from .template import template_router
+from .validation import validation_router
+
+__all__ = ["document_type_router"]
+
+document_type_router = APIRouter()
+document_type_router.include_router(document_types_router)
+document_type_router.include_router(validation_router)
+document_type_router.include_router(extraction_router)
+document_type_router.include_router(prototype_router)
+document_type_router.include_router(mapping_router)
+document_type_router.include_router(extractors_router)
+document_type_router.include_router(template_router)
+document_type_router.include_router(layout_router)
+document_type_router.include_router(enrichment_router)
+document_type_router.include_router(output_exporting_router)
+document_type_router.include_router(cloud_native_extraction_router)
+document_type_router.include_router(llm_extractor_router)

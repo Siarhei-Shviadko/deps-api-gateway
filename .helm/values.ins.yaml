@@ -1,0 +1,26 @@
+api_gateway:
+  image:
+    path: "/deps-platform/deps-api-gateway"
+  resources: {}
+#    limits:
+#      cpu:
+#      memory:
+#    requests:
+#      cpu:
+#      memory:
+
+api_gateway_settings:
+  ENV: ins
+  LOG_LEVEL: "INFO"
+  DEFAULT_STORAGE: S3_STORAGE
+
+helm:
+  enabled: false
+
+csi:
+  vault_namespace: 'k8s-ins'
+  roleName: 'k8s-ins'
+  vaultKubernetesMountPath: 'kubernetes-ins'
+
+service_account:
+  serviceAccountName: 'deps-insurance'

@@ -1,0 +1,21 @@
+from enum import Enum
+
+__all__ = ["ParsingType"]
+
+
+class ParsingType(str, Enum):
+    GCP_VISION = "GCP_VISION"
+    AWS_TEXTRACT = "AWS_TEXTRACT"
+    AZURE_FORM_RECOGNIZER = "AZURE_FORM_RECOGNIZER"
+
+    TESSERACT = "TESSERACT"
+    ABBYY = "ABBYY"
+    CRAFT_TESSERACT = "CRAFT_TESSERACT"
+    EASYOCR = "EASYOCR"
+    PADDLEOCR = "PADDLEOCR"
+
+    DOCX = "DOCX"
+
+    USER_DEFINED = "USER_DEFINED"
+
+    CUSTOM = "CUSTOM"

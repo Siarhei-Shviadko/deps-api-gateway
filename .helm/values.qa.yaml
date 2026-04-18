@@ -1,0 +1,25 @@
+api_gateway:
+  image:
+    path: "/deps-platform/deps-api-gateway"
+  resources: {}
+#    limits:
+#      cpu:
+#      memory:
+#    requests:
+#      cpu:
+#      memory:
+
+api_gateway_settings:
+  ENV: qa
+  LOG_LEVEL: "INFO"
+
+helm:
+  enabled: false
+
+csi:
+  vault_namespace: 'k8s-qa'
+  roleName: 'k8s-qa'
+  vaultKubernetesMountPath: 'kubernetes-qa'
+
+service_account:
+  serviceAccountName: 'deps-qa'

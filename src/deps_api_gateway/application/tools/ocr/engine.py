@@ -1,0 +1,14 @@
+from enum import Enum
+
+__all__ = ["OCREngineEnum"]
+
+
+class OCREngineEnum(str, Enum):
+    TESSERACT = "TESSERACT"
+    ABBYY = "ABBYY"
+    GCP_VISION = "GCP_VISION"
+    CRAFT_TESSERACT = "CRAFT_TESSERACT"
+    EASYOCR = "EASYOCR"
+    AWS_TEXTRACT = "AWS_TEXTRACT"
+    PADDLEOCR = "PADDLEOCR"
+    AZURE_FORM_RECOGNIZER = "AZURE_FORM_RECOGNIZER"
