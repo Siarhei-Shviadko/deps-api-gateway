@@ -14,4 +14,5 @@ api_gateway_settings:
   LOG_LEVEL: "INFO"
 
 helm:
-  enabled: false
+  enabled: true
+

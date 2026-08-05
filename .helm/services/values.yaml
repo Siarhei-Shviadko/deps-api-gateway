@@ -5,6 +5,8 @@ secrets:
     secretName: deps-api-gateway
   telemetry_secrets:
     secretName: telemetry-secrets
+  deps_litellm:
+    secretName: deps-litellm
 
 helm_logs_job:
   serviceAccountName: gitlab-ci
@@ -84,6 +86,9 @@ api_gateway_settings:
     FILE_URL: 'http://file:8000'
     META_AGENT_URL: 'http://meta-agent:8000'
     SEMANTIC_PARSING_URL: 'http://semantic-parsing:8000'
+    SPLITTING_URL: 'http://splitting:8000'
+    ANALYTIC_URL: 'http://analytic:8000'
+    LITELLM_URL: 'http://deps-litellm:4000'
 
     AUTHORIZATION_ENABLED: False
 
@@ -137,12 +142,13 @@ api_gateway_settings:
     {"kubernetes_name": "documentation", "code": "documentation", "name": "Documentation", "mandatory": false},
     {"kubernetes_name": "event-relay", "code": "event_relay", "name": "Event Relay", "mandatory": false},
     {"kubernetes_name": "cloud-native-extraction", "code": "cloud_native_extraction", "name": "Cloud Native Extraction", "mandatory": false},
-    {"kubernetes_name": "agentic-ai", "code": "agentic_ai", "name": "Agentic AI", "mandatory": false}
+    {"kubernetes_name": "agentic-ai", "code": "agentic_ai", "name": "Agentic AI", "mandatory": false},
+    {"kubernetes_name": "splitting", "code": "splitting", "name": "Splitting", "mandatory": false}
 ]
 '
 
 helm:
-  enabled: false
+  enabled: true
 
 csi:
   csi_default_name: deps-api-gateway
@@ -197,6 +203,11 @@ vault_enabled_api_gateway:
       secretKeyRef:
         name: deps-api-gateway
         key: app-secret-key
+  - name: LITELLM_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: deps-litellm
+        key: litellm-master-key
 
 vault_disabled_api_gateway:
   env:
@@ -220,3 +231,8 @@ vault_disabled_api_gateway:
       secretKeyRef:
         name: app-secret-key
         key: app-secret-key
+  - name: LITELLM_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: deps-litellm
+        key: litellm-master-key

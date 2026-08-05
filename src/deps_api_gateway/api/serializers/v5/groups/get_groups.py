@@ -4,14 +4,24 @@ from typing import Optional
 from fastapi.params import Query
 from pydantic import Field
 
+from deps_api_gateway.application import GetGroupsExtras
+
 from ...base import ConfiguredBaseModel
 from .paginated_result_metadata import PaginatedResultMetadata
 
-__all__ = ["GetGroupsRequest", "GetGroupsResponse"]
+__all__ = ["GetGroupsRequest", "GetGroupsResponse", "SplitterInfo"]
 
 
 class GroupsMetadata(PaginatedResultMetadata):
     pass
+
+
+class SplitterInfo(ConfiguredBaseModel):
+    splitter_id: str
+    splitter_name: str
+    splitter_description: str
+    group_id: str
+    document_type_id: Optional[str]
 
 
 class Group(ConfiguredBaseModel):
@@ -19,6 +29,7 @@ class Group(ConfiguredBaseModel):
     name: str
     document_type_ids: list[str] = Field(..., alias="documentTypeIds")
     created_at: datetime = Field(..., alias="createdAt")
+    splitter: Optional[SplitterInfo] = Field(None)
 
 
 class GetGroupsRequest(ConfiguredBaseModel):
@@ -30,6 +41,7 @@ class GetGroupsRequest(ConfiguredBaseModel):
     per_page: Optional[int] = Query(default=None, alias="perPage", ge=0)
     sort_by: Optional[str] = Query(default="createdAt", alias="sortBy")
     sort_order: Optional[str] = Query(default="desc", alias="sortOrder")
+    extras: Optional[list[GetGroupsExtras]] = Field(Query(default=None))
 
 
 class GetGroupsResponse(ConfiguredBaseModel):

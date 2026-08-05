@@ -14,7 +14,7 @@ api_gateway_settings:
   LOG_LEVEL: "INFO"
 
 helm:
-  enabled: false
+  enabled: true
 
 csi:
   vault_namespace: 'k8s-ds'
@@ -23,3 +23,4 @@ csi:
 
 service_account:
   serviceAccountName: 'deps-ds'
+

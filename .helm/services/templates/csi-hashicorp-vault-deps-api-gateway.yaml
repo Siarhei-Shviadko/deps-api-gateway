@@ -15,10 +15,10 @@ spec:
     type: Opaque
   parameters:
     roleName: {{ .Values.csi.roleName }}
-    vaultAddress: "https://vault_host"
-    vaultNamespace: "vault_namespace"
+    vaultAddress: "https://vault.service.consul.epm-sec.projects.epam.com:8200"
+    vaultNamespace: "bss-dev/epm-deps"
     vaultSkipTLSVerify: "true"
-    #vaultCACertPath: ""
+    #vaultCACertPath: /csi/epam_issuing.pem
     vaultKubernetesMountPath: {{ .Values.csi.vaultKubernetesMountPath }}
     objects: |
       - objectName: "keycloak-certs-endpoint"

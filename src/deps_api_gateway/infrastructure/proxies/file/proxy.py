@@ -218,6 +218,7 @@ class FileProxy(GenericRestClient, IFileProxy):
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None = None,
     ) -> ProxyResponse:
         url = f"{self.v1_prefix}/split"
@@ -234,6 +235,7 @@ class FileProxy(GenericRestClient, IFileProxy):
         form_data.add_field("needsUnifier", str(needs_unifier))
         form_data.add_field("needsExtraction", str(needs_extraction))
         form_data.add_field("assignedToMe", str(assigned_to_me))
+        form_data.add_field("needsSplittingProposalReview", str(needs_splitting_proposal_review))
 
         if document_type_id is not None:
             form_data.add_field("documentTypeId", document_type_id)
@@ -268,6 +270,7 @@ class FileProxy(GenericRestClient, IFileProxy):
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None = None,
     ) -> ProxyResponse:
         url = f"{self.v1_prefix}/{file_id}/split"
@@ -283,6 +286,7 @@ class FileProxy(GenericRestClient, IFileProxy):
             "needsUnifier": needs_unifier,
             "needsExtraction": needs_extraction,
             "assignedToMe": assigned_to_me,
+            "needsSplittingProposalReview": needs_splitting_proposal_review,
             "metadata": metadata,
         }
         request_filtered = {k: v for k, v in request.items() if v is not None}

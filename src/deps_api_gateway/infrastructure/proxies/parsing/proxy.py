@@ -95,6 +95,13 @@ class ParsingProxy(GenericRestClient, IParsingProxy):
                 await self.request(method=Methods.GET, url=f"{self.v2_prefix}/documents/{document_id}/parsing-info"),
             )
 
+    async def get_engines(self, layout_type: str | None = None) -> ProxyResponse:
+        async with self._handling_exception(ParsingServiceUnavailableError):
+            params = {"layoutType": layout_type} if layout_type else {}
+            return ProxyResponseFactory.make_response_from(
+                await self.request(method=Methods.GET, url=f"{self.v2_prefix}/engines", params=params),
+            )
+
     async def get_tabular_layout(
         self,
         tabular_layout_id: str,

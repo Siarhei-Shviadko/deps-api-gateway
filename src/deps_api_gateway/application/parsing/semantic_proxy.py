@@ -13,3 +13,9 @@ class ISemanticParsingProxy(Protocol):
         provider: Provider,
     ) -> ProxyResponse:
         ...
+
+    async def get_semantic_layout_info(
+        self,
+        layout_id: str,
+    ) -> ProxyResponse:
+        ...

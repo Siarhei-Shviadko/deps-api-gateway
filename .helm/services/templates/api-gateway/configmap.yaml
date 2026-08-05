@@ -41,6 +41,9 @@ data:
     FILE_URL: '{{ .Values.api_gateway_settings.FILE_URL }}'
     META_AGENT_URL: '{{ .Values.api_gateway_settings.META_AGENT_URL }}'
     SEMANTIC_PARSING_URL: '{{ .Values.api_gateway_settings.SEMANTIC_PARSING_URL }}'
+    SPLITTING_URL: '{{ .Values.api_gateway_settings.SPLITTING_URL }}'
+    ANALYTIC_URL: '{{ .Values.api_gateway_settings.ANALYTIC_URL }}'
+    LITELLM_URL: '{{ .Values.api_gateway_settings.LITELLM_URL }}'
 
     AUTHORIZATION_ENABLED: '{{ .Values.api_gateway_settings.AUTHORIZATION_ENABLED }}'
 

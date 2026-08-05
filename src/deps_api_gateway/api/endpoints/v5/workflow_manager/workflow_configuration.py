@@ -64,6 +64,7 @@ async def update_workflow_configuration(
         needs_validation=workflow_configuration.needs_validation,
         needs_review=workflow_configuration.needs_review,
         needs_output_exporting=workflow_configuration.needs_output_exporting,
+        engine=workflow_configuration.engine,
     )
     proxy_response = await workflow_service.update_workflow_configuration(configuration)
     return (

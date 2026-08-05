@@ -31,3 +31,15 @@ class SemanticParsingProxy(GenericRestClient, ISemanticParsingProxy):
                     params={"provider": provider.value},
                 )
             )
+
+    async def get_semantic_layout_info(
+        self,
+        layout_id: str,
+    ) -> ProxyResponse:
+        async with self._handling_exception(ParsingServiceUnavailableError):
+            return ProxyResponseFactory.make_response_from(
+                await self.request(
+                    method=Methods.GET,
+                    url=f"{self.v1_prefix}/semantic-layout/{layout_id}/info",
+                )
+            )

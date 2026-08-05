@@ -13,6 +13,7 @@ from ....serializers.v5 import (
     CreateGenAIClassifierResponse,
     CreateGroupRequest,
     CreateGroupResponse,
+    FindSplittersResponse,
     GetClassifiersOfGroupResponse,
     GetGroupResponse,
     GetGroupsRequest,
@@ -43,6 +44,7 @@ async def get_groups(
         per_page=get_groups_request.per_page,
         sort_by=get_groups_request.sort_by,
         sort_order=get_groups_request.sort_order,
+        extras=get_groups_request.extras,
     )
 
     return (
@@ -276,6 +278,23 @@ async def get_classifiers_of_group(
     group_service: GroupService = Depends(Provide[Application.group]),
 ) -> Response:
     proxy_response = await group_service.get_classifiers_of_group(group_id=group_id)
+
+    return (
+        ResponseBuilder()
+        .with_status(proxy_response.status_code)
+        .with_headers(proxy_response.headers)
+        .with_content(proxy_response.content)
+        .build()
+    )
+
+
+@groups_router.get("/{groupId}/splitters", status_code=status.HTTP_200_OK, response_model=FindSplittersResponse)
+@inject
+async def get_group_splitters(
+    group_id: str = Path(..., alias="groupId"),
+    group_service: GroupService = Depends(Provide[Application.group]),
+) -> Response:
+    proxy_response = await group_service.get_splitters(group_id=group_id)
 
     return (
         ResponseBuilder()

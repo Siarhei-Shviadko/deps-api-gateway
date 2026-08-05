@@ -92,3 +92,6 @@ class IParsingProxy(Protocol):
         update_key_value_pair_request: dict[str, Any],
     ) -> ProxyResponse:
         ...
+
+    async def get_engines(self, layout_type: str | None = None) -> ProxyResponse:
+        ...

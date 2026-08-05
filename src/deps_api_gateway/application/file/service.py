@@ -270,6 +270,7 @@ class FileService:
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None,
     ) -> ProxyResponse:
         return await self._file_proxy.split_file(
@@ -285,6 +286,7 @@ class FileService:
             needs_unifier=needs_unifier,
             needs_extraction=needs_extraction,
             assigned_to_me=assigned_to_me,
+            needs_splitting_proposal_review=needs_splitting_proposal_review,
             metadata=metadata,
         )
 
@@ -301,6 +303,7 @@ class FileService:
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None,
     ) -> ProxyResponse:
         return await self._file_proxy.split_existing_file(
@@ -315,6 +318,7 @@ class FileService:
             needs_unifier=needs_unifier,
             needs_extraction=needs_extraction,
             assigned_to_me=assigned_to_me,
+            needs_splitting_proposal_review=needs_splitting_proposal_review,
             metadata=metadata,
         )
 

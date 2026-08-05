@@ -3,12 +3,7 @@ from typing import Any, Optional, TypedDict
 
 from starlette.datastructures import UploadFile
 
-from deps_api_gateway.domain import (
-    ContextAttachments,
-    ExtractionFieldData,
-    ExtraFieldData,
-    ProfileData,
-)
+from deps_api_gateway.domain import ExtractionFieldData, ExtraFieldData, ProfileData
 
 from ...constants import ExtractionType
 from ..iproxies import (
@@ -720,23 +715,13 @@ class DocumentTypeService:
         extractor_id: str,
         document_type_id: str,
         name: str,
-        custom_instruction: str,
-        grouping_factor: int,
-        temperature: float,
-        top_p: float,
-        page_span: Optional[dict[str, int]],
-        context_attachments: Optional[ContextAttachments],
+        extraction_params: dict[str, Any],
     ) -> ProxyResponse:
         return await self._ai_fusion_proxy.update_llm_extractor(
             extractor_id=extractor_id,
             document_type_id=document_type_id,
             name=name,
-            custom_instruction=custom_instruction,
-            grouping_factor=grouping_factor,
-            temperature=temperature,
-            top_p=top_p,
-            page_span=page_span,
-            context_attachments=context_attachments,
+            extraction_params=extraction_params,
         )
 
     async def assign_llm_to_llm_extractor(

@@ -1,10 +1,12 @@
-from typing import Any, Optional, Self
+from typing import Any
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from deps_api_gateway.domain import ContextAttachments
 
 from ...base import ConfiguredBaseModel
+from .base_llm_params import BaseLLMParams
+from .page_span import SerializedPageSpan
 from .query import SerializedExtractionQuery
 
 __all__ = [
@@ -24,29 +26,12 @@ Focus on identifying actionable, relevant, and concise information that fulfills
 Ensure that the extracted insights are accurate, adhere to specified constraints and respond strictly in the format requested.\
 """
 DEFAULT_GROUPING_FACTOR: int = 3
-DEFAULT_TEMPERATURE: float = 0
-DEFAULT_TOP_P: float = 1.0
+DEFAULT_TEMPERATURE: float = 0.5
 
 
-class SerializedPageSpan(ConfiguredBaseModel):
-    start: int = Field(..., ge=1)
-    end: int = Field(..., ge=1)
-
-    @model_validator(mode="after")
-    def check_order(self) -> Self:
-        if self.start is not None and self.end is not None and self.start > self.end:
-            raise ValueError("PageSpan start must be less or equal end!")
-        return self
-
-    def to_dict(self) -> dict[str, Any]:
-        return {"start": self.start, "end": self.end}
-
-
-class SerializedLLMExtractionParams(ConfiguredBaseModel):
+class SerializedLLMExtractionParams(BaseLLMParams):
     custom_instruction: str = Field(DEFAULT_CUSTOM_INSTRUCTION, alias="customInstruction")
     grouping_factor: int = Field(DEFAULT_GROUPING_FACTOR, alias="groupingFactor", ge=1)
-    temperature: float = Field(DEFAULT_TEMPERATURE, ge=0, le=2)
-    top_p: float = Field(DEFAULT_TOP_P, alias="topP", ge=0, le=1)
     page_span: SerializedPageSpan | None = Field(None, alias="pageSpan")
     context_attachments: ContextAttachments | None = Field(None, alias="contextAttachments")
 
@@ -56,6 +41,11 @@ class SerializedLLMExtractionParams(ConfiguredBaseModel):
             "groupingFactor": self.grouping_factor,
             "temperature": self.temperature,
             "topP": self.top_p,
+            "maxTokens": self.max_tokens,
+            "stop": self.stop,
+            "seed": self.seed,
+            "logprobs": self.logprobs,
+            "extraModelParams": self.extra_model_params,
             "pageSpan": self.page_span.to_dict() if self.page_span else None,
             "contextAttachments": self.context_attachments.value if self.context_attachments else None,
         }
@@ -76,13 +66,36 @@ class AttachLLMExtractorResponse(ConfiguredBaseModel):
     document_type_id: str = Field(..., alias="documentTypeId")
 
 
-class UpdateExtractorParams(ConfiguredBaseModel):
+class UpdateExtractorParams(BaseLLMParams):
     custom_instruction: str = Field(..., alias="customInstruction")
     grouping_factor: int = Field(..., ge=1, alias="groupingFactor")
-    temperature: float = Field(..., ge=0, le=2)
-    top_p: float = Field(..., ge=0, le=1, alias="topP")
-    page_span: Optional[SerializedPageSpan] = Field(..., alias="pageSpan")
+    temperature: float = Field(
+        default=DEFAULT_TEMPERATURE,
+        ge=0,
+        le=2,
+        examples=[0.7],
+        description="""Controls the randomness of text generation.
+        Lower temperatures make the model more deterministic and repetitive,
+         while higher temperatures make the model more creative and random.
+        """,
+    )
+    page_span: SerializedPageSpan | None = Field(..., alias="pageSpan")
     context_attachments: ContextAttachments | None = Field(None, alias="contextAttachments")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "customInstruction": self.custom_instruction,
+            "groupingFactor": self.grouping_factor,
+            "temperature": self.temperature,
+            "topP": self.top_p,
+            "maxTokens": self.max_tokens,
+            "stop": self.stop,
+            "seed": self.seed,
+            "logprobs": self.logprobs,
+            "extraModelParams": self.extra_model_params,
+            "pageSpan": self.page_span.to_dict() if self.page_span else None,
+            "contextAttachments": self.context_attachments.value if self.context_attachments else None,
+        }
 
 
 class UpdateLLMExtractorRequest(ConfiguredBaseModel):

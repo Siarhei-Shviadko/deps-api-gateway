@@ -195,6 +195,12 @@ class DocumentService:  # noqa: WPS214
     ) -> ProxyResponse:
         return await self._semantic_parsing_proxy.get_semantic_layout(layout_id=layout_id, provider=provider)
 
+    async def get_semantic_layout_info(
+        self,
+        layout_id: str,
+    ) -> ProxyResponse:
+        return await self._semantic_parsing_proxy.get_semantic_layout_info(layout_id=layout_id)
+
     async def update_document_layout_image(
         self,
         document_id: str,

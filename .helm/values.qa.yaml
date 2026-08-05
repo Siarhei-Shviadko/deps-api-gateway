@@ -14,7 +14,7 @@ api_gateway_settings:
   LOG_LEVEL: "INFO"
 
 helm:
-  enabled: false
+  enabled: true
 
 csi:
   vault_namespace: 'k8s-qa'
