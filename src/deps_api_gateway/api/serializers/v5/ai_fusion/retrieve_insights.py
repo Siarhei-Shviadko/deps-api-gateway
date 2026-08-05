@@ -1,8 +1,9 @@
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from pydantic import Field
 
 from ...base import ConfiguredBaseModel
+from .base_llm_params import BaseLLMParams
 from .llm_extractors import SerializedPageSpan
 
 __all__ = ["RetrieveInsightsRequest", "RetrieveInsightsResponse", "RetrieveFileInsightsRequest"]
@@ -14,7 +15,7 @@ class SerializedGenAIPrompt(ConfiguredBaseModel):
 
 class SerializedGenAIWorkflow(ConfiguredBaseModel):
     prompts: list[SerializedGenAIPrompt]
-    response_model: Optional[dict[str, Any]] = Field(
+    response_model: dict[str, Any] | None = Field(
         None,
         alias="responseModel",
         description="A JSON Schema (OpenAPI V3) object defining the shape of the LLM’s structured response..",
@@ -25,22 +26,8 @@ class SerializedGenAIQuery(ConfiguredBaseModel):
     workflow: SerializedGenAIWorkflow
 
 
-class RetrieveInsightsRequestParams(ConfiguredBaseModel):
-    temperature: float = Field(
-        default=0,
-        description="""Controls the randomness of text generation.
-        Lower temperatures make the model more deterministic and repetitive, while higher temperatures make the model more creative and random.
-        """,
-    )
-    top_p: float = Field(
-        default=1,
-        alias="topP",
-        description="""Controls diversity via nucleus sampling.
-        Only tokens with cumulative probability mass of top_p are considered. Value must be between 0 and 1.
-        Lower values make output more focused and deterministic.
-        """,
-    )
-    grouping_factor: Optional[int] = Field(
+class RetrieveInsightsRequestParams(BaseLLMParams):
+    grouping_factor: int | None = Field(
         None,
         alias="groupingFactor",
         description="""Defines how many elements are grouped per LLM request.
@@ -48,7 +35,7 @@ class RetrieveInsightsRequestParams(ConfiguredBaseModel):
         On the other hand, a large number of elements grouped in a single request potentially decreases the quality of the insights retrieved.
         """,
     )
-    page_span: Optional[SerializedPageSpan] = Field(
+    page_span: SerializedPageSpan | None = Field(
         None,
         alias="pageSpan",
         description="Inclusive range of pages to process. If omitted, all pages will be processed.",
@@ -67,7 +54,7 @@ class RetrieveInsightsRequest(ConfiguredBaseModel):
         description="Mapping between an ElementCode to retrieve insights for, and a LLM Query to use for that ElementCode",
     )
 
-    custom_instructions: Optional[str] = Field(
+    custom_instructions: str | None = Field(
         None,
         alias="customInstructions",
         description="""Custom instructions are appended to the system prompt to guide the model’s behavior.
@@ -79,7 +66,7 @@ class RetrieveInsightsRequest(ConfiguredBaseModel):
         ...,
         description="Additional parameters to be used for the insights retrieval.",
     )
-    files: Optional[list[str]] = Field(None, description="Paths to files, that will be added to context.")
+    files: list[str] | None = Field(None, description="Paths to files, that will be added to context.")
 
     def requested_insights_to_dict(self) -> dict[str, Union[str, dict[str, Any]]]:
         return {
@@ -98,7 +85,7 @@ class RetrieveFileInsightsRequest(RetrieveInsightsRequest):
 
 class Insight(ConfiguredBaseModel):
     content: str
-    confidence: Optional[float]
+    confidence: float | None = Field(None, description="Confidence score for the insight.")
 
 
 class RetrieveInsightsResponse(ConfiguredBaseModel):

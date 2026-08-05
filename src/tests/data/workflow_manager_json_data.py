@@ -9,6 +9,7 @@ WORKFLOW_CONFIGURATION_RESPONSE_DICT = {
     "needsValidation": True,
     "needsReview": "always_review",
     "needsOutputExporting": True,
+    "engine": "TESSERACT",
 }
 WORKFLOW_CONFIGURATION_RESPONSE_JSON = json.dumps(WORKFLOW_CONFIGURATION_RESPONSE_DICT)
 

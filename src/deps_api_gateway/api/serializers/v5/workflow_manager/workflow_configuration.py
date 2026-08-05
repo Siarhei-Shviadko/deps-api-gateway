@@ -15,6 +15,7 @@ class SerializedWorkflowConfiguration(ConfiguredBaseModel):
     needs_validation: bool = Field(..., alias="needsValidation")
     needs_review: NeedsReviewOption = Field(..., alias="needsReview")
     needs_output_exporting: bool = Field(..., alias="needsOutputExporting")
+    engine: str | None = Field(None, alias="engine")
 
 
 class WorkflowConfigurationResponse(SerializedWorkflowConfiguration):
@@ -28,3 +29,4 @@ class UpdateWorkflowConfigurationRequest(ConfiguredBaseModel):
     needs_validation: bool | None = Field(default=None, alias="needsValidation")
     needs_review: NeedsReviewOption | None = Field(default=None, alias="needsReview")
     needs_output_exporting: bool | None = Field(default=None, alias="needsOutputExporting")
+    engine: str | None = Field(default=None, alias="engine")

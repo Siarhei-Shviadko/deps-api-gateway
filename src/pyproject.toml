@@ -72,6 +72,7 @@ markers = [
     "document_list",
     "enrichment",
     "groups",
+    "document_field_analytics",
     "iam_endpoints",
     "ocr",
     "utput_exporting",
@@ -85,5 +86,8 @@ markers = [
     "batches",
     "event_router",
     "files",
+    "splitters",
+    "splitting_proposals",
+    "litellm",
 ]
 

@@ -127,12 +127,7 @@ async def update_llm_extractor(
         extractor_id=extractor_id,
         document_type_id=document_type_id,
         name=request.name,
-        custom_instruction=request.extraction_params.custom_instruction,
-        grouping_factor=request.extraction_params.grouping_factor,
-        temperature=request.extraction_params.temperature,
-        top_p=request.extraction_params.top_p,
-        page_span=request.extraction_params.page_span.to_dict() if request.extraction_params.page_span else None,
-        context_attachments=request.extraction_params.context_attachments,
+        extraction_params=request.extraction_params.to_dict(),
     )
     return (
         ResponseBuilder()

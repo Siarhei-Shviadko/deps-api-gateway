@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     file_url: str
     meta_agent_url: str
     semantic_parsing_url: str
+    splitting_url: str
+    analytic_url: str
+    litellm_url: str
+    litellm_api_key: str
 
     cache_settings: CacheSettings = CacheSettings()
 

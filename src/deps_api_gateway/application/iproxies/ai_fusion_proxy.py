@@ -1,7 +1,5 @@
 from typing import Any, Optional, Protocol, Union
 
-from deps_api_gateway.domain import ContextAttachments
-
 from ..proxy_response import ProxyResponse
 from ..types import InsightsRequestParamsDict, RawDataShape, RawLLMWorkflow
 
@@ -89,12 +87,7 @@ class IAIFusionProxy(Protocol):
         extractor_id: str,
         document_type_id: str,
         name: str,
-        custom_instruction: str,
-        grouping_factor: int,
-        temperature: float,
-        top_p: float,
-        page_span: Optional[dict[str, int]],
-        context_attachments: Optional[ContextAttachments],
+        extraction_params: dict[str, Any],
     ) -> ProxyResponse:
         ...
 

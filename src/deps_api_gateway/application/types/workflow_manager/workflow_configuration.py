@@ -14,3 +14,4 @@ class WorkflowConfiguration(TypedDict):
     needs_validation: bool | None
     needs_review: NeedsReviewOption | None
     needs_output_exporting: bool | None
+    engine: str | None

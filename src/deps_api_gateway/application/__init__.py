@@ -1,6 +1,7 @@
 from .agentic_ai import *
 from .batch import *
 from .document import *
+from .document_field_analytics import *
 from .document_type import *
 from .events_relay import *
 from .extraction import *
@@ -12,6 +13,7 @@ from .meta_agent import *
 from .parsing import *
 from .proxy_response import *
 from .service_discovery import *
+from .splitter import *
 from .storage import *
 from .tools import *
 from .types import *
@@ -28,8 +30,10 @@ __all__ = (
     + iproxies.__all__
     + types.__all__
     + group.__all__
+    + document_field_analytics.__all__
     + storage.__all__
     + batch.__all__
+    + splitter.__all__
     + events_relay.__all__
     + service_discovery.__all__
     + agentic_ai.__all__

@@ -3,6 +3,7 @@ from .ai_fusion import *
 from .batch import *
 from .cloud_native_extraction import *
 from .document import *
+from .document_field_analytics import *
 from .document_type import *
 from .enrichment import *
 from .extraction import *
@@ -14,6 +15,8 @@ from .output_exporting import *
 from .parsing import *
 from .pipeline import *
 from .prototype import *
+from .semantic_layout import *
+from .splitters import *
 from .storage import *
 from .template import *
 from .unifier import *
@@ -24,6 +27,7 @@ __all__ = (
     ai_fusion.__all__
     + validation.__all__
     + parsing.__all__
+    + semantic_layout.__all__
     + unifier.__all__
     + output_exporting.__all__
     + ocr.__all__
@@ -37,9 +41,11 @@ __all__ = (
     + extraction.__all__
     + iam.__all__
     + groups.__all__
+    + document_field_analytics.__all__
     + cloud_native_extraction.__all__
     + storage.__all__
     + batch.__all__
+    + splitters.__all__
     + agentic_ai.__all__
     + workflow_manager.__all__
 )
