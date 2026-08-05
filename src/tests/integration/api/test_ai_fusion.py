@@ -127,6 +127,11 @@ async def test_retrieve_insights__ok(client, document_id: str):
             "temperature": 0,
             "topP": 1,
             "groupingFactor": 5,
+            "maxTokens": 2048,
+            "stop": ["END", "\n"],
+            "seed": 42,
+            "logprobs": False,
+            "extraModelParams": {"n": 5},
         },
         "files": ["file1.png", "file2.png"],
     }
@@ -159,6 +164,11 @@ async def test_retrieve_file_insights__ok(client):
             "temperature": 0,
             "topP": 1,
             "groupingFactor": 5,
+            "maxTokens": 2048,
+            "stop": ["END", "\n"],
+            "seed": 42,
+            "logprobs": False,
+            "extraModelParams": {"n": 5},
         },
         "files": ["file1.png", "file2.png"],
     }

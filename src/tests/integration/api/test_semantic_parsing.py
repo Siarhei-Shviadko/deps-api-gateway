@@ -12,7 +12,7 @@ from deps_api_gateway.constants import (
     SEMANTIC_PARSING_BASE_API_PREFIX,
     V1_PREFIX,
 )
-from tests.data.parsing_json_data import SEMANTIC_LAYOUT_JSON
+from tests.data.parsing_json_data import SEMANTIC_LAYOUT_INFO_JSON, SEMANTIC_LAYOUT_JSON
 
 SEMANTIC_PARSING_V1_URL = f"{SEMANTIC_PARSING_BASE_API_PREFIX}{V1_PREFIX}"
 
@@ -48,6 +48,34 @@ async def test_get_semantic_layout__service_unavailable__502_error(client, docum
     params = {"provider": Provider.LLAMAINDEX.value}
     url = f"{BASE_API_V5_PREFIX}/semantic-layout/{document_id}"
     semantic_parsing_url = f"{SEMANTIC_PARSING_V1_URL}/semantic-layout/{document_id}?{urlencode(params, doseq=True)}"
+
+    with aioresponses() as mock_response:
+        mock_response.get(semantic_parsing_url, exception=ClientConnectionError("failed_connection"))
+
+        response = await client.get(url)
+
+        assert response.status_code == HTTPStatus.BAD_GATEWAY
+
+
+@pytest.mark.asyncio
+async def test_get_semantic_layout_info__ok(client, document_id):
+    url = f"{BASE_API_V5_PREFIX}/semantic-layout/{document_id}/info"
+    semantic_parsing_url = f"{SEMANTIC_PARSING_V1_URL}/semantic-layout/{document_id}/info"
+
+    with aioresponses() as mock_response:
+        mock_response.get(semantic_parsing_url, body=SEMANTIC_LAYOUT_INFO_JSON)
+
+        response = await client.get(url)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == json.loads(SEMANTIC_LAYOUT_INFO_JSON)
+        mock_response.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_semantic_layout_info__service_unavailable__502_error(client, document_id):
+    url = f"{BASE_API_V5_PREFIX}/semantic-layout/{document_id}/info"
+    semantic_parsing_url = f"{SEMANTIC_PARSING_V1_URL}/semantic-layout/{document_id}/info"
 
     with aioresponses() as mock_response:
         mock_response.get(semantic_parsing_url, exception=ClientConnectionError("failed_connection"))

@@ -14,6 +14,7 @@ from deps_api_gateway.application import (
     AgenticAIService,
     AIFusionService,
     BatchService,
+    DocumentFieldAnalyticsService,
     DocumentService,
     DocumentTypeService,
     EventRelayService,
@@ -26,6 +27,7 @@ from deps_api_gateway.application import (
     IBatchProxy,
     IClassificationProxy,
     ICloudNativeExtractionProxy,
+    IDocumentFieldAnalyticsProxy,
     IDocumentProxy,
     IDocumentTypeProxy,
     IEnrichmentProxy,
@@ -34,19 +36,24 @@ from deps_api_gateway.application import (
     IGroupsProxy,
     IHighSparrowProxy,
     IIAMProxy,
+    ILiteLLMProxy,
     IMetaAgentProxy,
     IOCRProxy,
     IOutputExportingProxy,
     IParsingProxy,
     ISemanticParsingProxy,
+    ISplittingProxy,
     IStorageProxy,
     ITemplateProxy,
     IUnifierProxy,
     IWorkflowManagerProxy,
+    LiteLLMService,
     MetaAgentService,
     OCRService,
     ParsingService,
+    ParsingToolsService,
     ServiceDiscovery,
+    SplittingService,
     StorageService,
     WorkflowService,
     legacy,
@@ -57,6 +64,7 @@ from deps_api_gateway.infrastructure import (
     AgenticAIProxy,
     AgenticAISSEProxy,
     AIFusionProxy,
+    AnalyticProxy,
     BatchProxy,
     ClassificationProxy,
     CloudNativeExtractionProxy,
@@ -73,6 +81,7 @@ from deps_api_gateway.infrastructure import (
     HighSparrowProxy,
     IAMProxy,
     IBackwardCompatiblePrototypeProxy,
+    LiteLLMProxy,
     MetaAgentProxy,
     OCRProxy,
     OldDocumentProxy,
@@ -89,6 +98,7 @@ from deps_api_gateway.infrastructure import (
     PrompterProxy,
     PrototypeProxy,
     SemanticParsingProxy,
+    SplittingProxy,
     StorageProxy,
     TemplateProxy,
     UnifierProxy,
@@ -251,6 +261,12 @@ class ExternalServices(containers.DeclarativeContainer):
         base_url=config.ai_fusion_url,
         verify_ssl=config.verify_ssl,
     )
+    litellm_proxy: providers.Singleton[ILiteLLMProxy] = providers.Singleton(
+        LiteLLMProxy,
+        base_url=config.litellm_url,
+        api_key=config.litellm_api_key,
+        verify_ssl=config.verify_ssl,
+    )
     enrichment_proxy: providers.Singleton[IEnrichmentProxy] = providers.Singleton(
         EnrichmentProxy,
         base_url=config.enrichment_url,
@@ -289,6 +305,16 @@ class ExternalServices(containers.DeclarativeContainer):
     batch_proxy: providers.Singleton[IBatchProxy] = providers.Singleton(
         BatchProxy,
         base_url=config.files_batch_url,
+        verify_ssl=config.verify_ssl,
+    )
+    splitting_proxy: providers.Singleton[ISplittingProxy] = providers.Singleton(
+        SplittingProxy,
+        base_url=config.splitting_url,
+        verify_ssl=config.verify_ssl,
+    )
+    document_field_analytics_proxy: providers.Singleton[IDocumentFieldAnalyticsProxy] = providers.Singleton(
+        AnalyticProxy,
+        base_url=config.analytic_url,
         verify_ssl=config.verify_ssl,
     )
     event_relay_proxy: providers.Singleton[IEventRelayProxy] = providers.Singleton(
@@ -410,9 +436,19 @@ class Tools(containers.DeclarativeContainer):
         ocr_proxy=external_services.ocr_proxy,
     )
 
+    parsing: providers.Singleton[ParsingToolsService] = providers.Singleton(
+        ParsingToolsService,
+        parsing_proxy=external_services.parsing_proxy,
+    )
+
     ai_fusion: providers.Singleton[AIFusionService] = providers.Singleton(
         AIFusionService,
         ai_fusion_proxy=external_services.ai_fusion_proxy,
+    )
+
+    litellm: providers.Singleton[LiteLLMService] = providers.Singleton(
+        LiteLLMService,
+        litellm_proxy=external_services.litellm_proxy,
     )
 
 
@@ -524,6 +560,13 @@ class Application(containers.DeclarativeContainer):
         GroupService,
         groups_proxy=external_services.groups_proxy,
         classification_proxy=external_services.classification_proxy,
+        splitter_proxy=external_services.splitting_proxy,
+    )
+
+    document_field_analytics: providers.Singleton[DocumentFieldAnalyticsService] = providers.Singleton(
+        DocumentFieldAnalyticsService,
+        document_field_analytics_proxy=external_services.document_field_analytics_proxy,
+        extraction_proxy=external_services.extraction_proxy,
     )
 
     storage: providers.Singleton[StorageService] = providers.Singleton(
@@ -534,6 +577,10 @@ class Application(containers.DeclarativeContainer):
     batch: providers.Singleton[BatchService] = providers.Singleton(
         BatchService,
         batch_proxy=external_services.batch_proxy,
+    )
+    splitter: providers.Singleton[SplittingService] = providers.Singleton(
+        SplittingService,
+        splitter_proxy=external_services.splitting_proxy,
     )
     event_relay: providers.Singleton[EventRelayService] = providers.Singleton(
         EventRelayService,

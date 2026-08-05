@@ -3,8 +3,9 @@ from typing import Optional, TypedDict
 
 from ..iproxies import IClassificationProxy
 from ..proxy_response import ProxyResponse
+from ..splitter import ISplittingProxy
 from .consolidator import GroupsConsolidator
-from .group_extras import GetGroupExtras
+from .group_extras import GetGroupExtras, GetGroupsExtras
 from .groups_proxy import IGroupsProxy
 
 __all__ = ["GroupService", "GEN_AI_CLASSIFIER_NAME_MAX_LENGTH"]
@@ -18,6 +19,7 @@ class _GroupsResponse(TypedDict, total=True):
 
 class _GetGroupResponses(_GroupsResponse, total=False):
     classification_response: ProxyResponse
+    splitter_response: ProxyResponse
 
 
 class GroupService:
@@ -25,9 +27,11 @@ class GroupService:
         self,
         groups_proxy: IGroupsProxy,
         classification_proxy: IClassificationProxy,
+        splitter_proxy: ISplittingProxy,
     ) -> None:
         self._groups_proxy = groups_proxy
         self._classification_proxy = classification_proxy
+        self._splitter_proxy = splitter_proxy
 
     async def get_groups(
         self,
@@ -39,16 +43,37 @@ class GroupService:
         per_page: Optional[int],
         sort_by: str,
         sort_order: str,
+        extras: Optional[list[GetGroupsExtras]] = None,
     ) -> ProxyResponse:
-        return await self._groups_proxy.get_groups(
-            name=name,
-            document_type_id=document_type_id,
-            date_start=date_start,
-            date_end=date_end,
-            page=page,
-            per_page=per_page,
-            sort_by=sort_by,
-            sort_order=sort_order,
+        if not extras or GetGroupsExtras.SPLITTERS not in extras:
+            return await self._groups_proxy.get_groups(
+                name=name,
+                document_type_id=document_type_id,
+                date_start=date_start,
+                date_end=date_end,
+                page=page,
+                per_page=per_page,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            )
+
+        groups_response, splittings_response = await asyncio.gather(
+            self._groups_proxy.get_groups(
+                name=name,
+                document_type_id=document_type_id,
+                date_start=date_start,
+                date_end=date_end,
+                page=page,
+                per_page=per_page,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            ),
+            self._splitter_proxy.find_splitters(),
+        )
+
+        return GroupsConsolidator.consolidate_groups(
+            groups_response=groups_response,
+            splittings_response=splittings_response,
         )
 
     async def get_group(self, group_id: str, extras: Optional[list[GetGroupExtras]]) -> ProxyResponse:
@@ -60,6 +85,7 @@ class GroupService:
         return GroupsConsolidator.consolidate_group(
             groups_response=result_dict["groups_response"],
             classification_response=result_dict.get("classification_response"),
+            splitter_response=result_dict.get("splitter_response"),
         )
 
     async def create_group(
@@ -131,6 +157,9 @@ class GroupService:
     async def get_classifiers_of_group(self, group_id: str) -> ProxyResponse:
         return await self._classification_proxy.get_gen_ai_classifiers_of_group(group_id)
 
+    async def get_splitters(self, group_id: str) -> ProxyResponse:
+        return await self._splitter_proxy.find_splitters(group_id)
+
     async def _gather_get_group_requests(
         self, group_id: str, extras: Optional[list[GetGroupExtras]]
     ) -> _GetGroupResponses:
@@ -141,5 +170,7 @@ class GroupService:
                 coroutines["classification_response"] = self._classification_proxy.get_gen_ai_classifiers_of_group(
                     group_id
                 )
+            if GetGroupExtras.SPLITTERS in extras:
+                coroutines["splitter_response"] = self._splitter_proxy.find_splitters(group_id)
 
         return _GetGroupResponses(zip(coroutines.keys(), await asyncio.gather(*coroutines.values())))  # type: ignore

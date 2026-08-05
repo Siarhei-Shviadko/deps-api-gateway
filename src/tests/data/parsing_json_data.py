@@ -161,6 +161,7 @@ PARSING_INFO_DICT = {
             },
         ],
     },
+    "semanticLayoutInfo": None,
 }
 
 PARSING_INFO_JSON = json.dumps(PARSING_INFO_DICT)
@@ -248,6 +249,26 @@ SEMANTIC_LAYOUT_DICT = {
 }
 
 SEMANTIC_LAYOUT_JSON = json.dumps(SEMANTIC_LAYOUT_DICT)
+
+
+SEMANTIC_LAYOUT_INFO_LAYOUT_ID = uuid.uuid4().hex
+SEMANTIC_LAYOUT_INFO_DICT = {
+    "layoutId": SEMANTIC_LAYOUT_INFO_LAYOUT_ID,
+    "semanticLayoutInfo": {
+        "llamaindex": {
+            "id": uuid.uuid4().hex,
+            "provider": "llamaindex",
+            "createdAt": datetime.now(UTC).isoformat(),
+            "metadata": {
+                "sourceProvider": uuid.uuid4().hex,
+                "processingTimeMs": 100,
+                "confidence": 0.99,
+            },
+        }
+    },
+}
+
+SEMANTIC_LAYOUT_INFO_JSON = json.dumps(SEMANTIC_LAYOUT_INFO_DICT)
 
 
 EDIT_IMAGE_REQUEST_DICT = {

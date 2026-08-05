@@ -1021,6 +1021,38 @@ async def test_split_file__validation_error__missing_group_id(client: AsyncClien
 
 @pytest.mark.asyncio
 @pytest.mark.files
+async def test_split_file__with_needs_splitting_proposal_review__ok(client: AsyncClient):
+    file_content = b"test file content for splitting"
+    files = {"file": ("test-document.pdf", file_content, "application/pdf")}
+
+    data = {
+        "classificationEnabled": "True",
+        "needsUnifier": "True",
+        "needsExtraction": "True",
+        "assignedToMe": "False",
+        "needsSplittingProposalReview": "True",
+        "groupId": "group-456",
+    }
+
+    with aioresponses() as mock_response:
+        mock_response.post(
+            f"{FILES_BASE_API_PREFIX}{V1_PREFIX}{FILES_ROUTER_PREFIX}/split",
+            status=HTTPStatus.CREATED,
+            body=json.dumps(SPLIT_FILE_SUCCESS_RESPONSE),
+        )
+
+        response = await client.post(
+            f"{API_GATEWAY_FILES_V5_URL}/split",
+            files=files,
+            data=data,
+        )
+
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.json() == SPLIT_FILE_SUCCESS_RESPONSE
+
+
+@pytest.mark.asyncio
+@pytest.mark.files
 async def test_split_file__backend_error(client: AsyncClient):
     file_content = b"test content for splitting"
     workflow_params = {
@@ -1093,6 +1125,32 @@ async def test_split_existing_file__success__ok(client: AsyncClient):
         response = await client.patch(
             f"{API_GATEWAY_FILES_V5_URL}/{file_id}/split",
             json=workflow_params,
+        )
+
+        assert response.status_code == HTTPStatus.NO_CONTENT
+
+
+@pytest.mark.asyncio
+@pytest.mark.files
+async def test_split_existing_file__with_needs_splitting_proposal_review__ok(client: AsyncClient):
+    file_id = "file-123"
+
+    with aioresponses() as mock_response:
+        mock_response.patch(
+            f"{FILES_BASE_V1_URL}/{file_id}/split",
+            status=HTTPStatus.NO_CONTENT,
+        )
+
+        response = await client.patch(
+            f"{API_GATEWAY_FILES_V5_URL}/{file_id}/split",
+            json={
+                "classificationEnabled": True,
+                "needsUnifier": True,
+                "needsExtraction": True,
+                "assignedToMe": False,
+                "needsSplittingProposalReview": True,
+                "groupId": "group-789",
+            },
         )
 
         assert response.status_code == HTTPStatus.NO_CONTENT

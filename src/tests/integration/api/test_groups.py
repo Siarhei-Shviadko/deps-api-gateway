@@ -3,7 +3,7 @@ import json
 import urllib
 from datetime import datetime
 from http import HTTPStatus
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlencode
 
 import pytest
@@ -15,13 +15,19 @@ from deps_api_gateway.constants import (
     BASE_API_V5_PREFIX,
     CLASSIFICATION_BASE_API_PREFIX,
     GROUPS_BASE_API_PREFIX,
+    SPLITTING_BASE_API_PREFIX,
     V1_PREFIX,
 )
 from tests.data.groups_json_data import *
+from tests.data.splitter_json_data import (
+    FIND_ALL_SPLITTERS_RESPONSE,
+    FIND_SPLITTERS_RESPONSE,
+)
 
 API_GATEWAY_GROUPS_V5_URL = f"{BASE_API_V5_PREFIX}/groups"
 GROUPS_BASE_V1_URL = f"{GROUPS_BASE_API_PREFIX}{V1_PREFIX}/groups"
 CLASSIFICATION_BASE_URL = f"{CLASSIFICATION_BASE_API_PREFIX}{V1_PREFIX}"
+SPLITTING_SERVICE_SPLITTERS_URL = f"{SPLITTING_BASE_API_PREFIX}{V1_PREFIX}/splitters"
 
 
 @pytest.mark.asyncio
@@ -118,8 +124,9 @@ async def test_get_group__ok(client: AsyncClient, group_id: str, extras: Optiona
     groups_url = f"{GROUPS_BASE_V1_URL}/{group_id}"
     classification_url = f"{CLASSIFICATION_BASE_URL}/groups/{group_id}/gen-ai-classifiers"
 
-    group = copy.deepcopy(GET_GROUP_RESPONSE_DICT)
+    group: dict[str, Any] = copy.deepcopy(GET_GROUP_RESPONSE_DICT)
     group["group"]["genAiClassifiers"] = None
+    group["group"]["splitters"] = None
 
     data = {}
     if extras is not None:
@@ -265,3 +272,113 @@ async def test_get_classifiers_of_group__ok(client: AsyncClient, group_id: str):
 
         assert response.status_code == HTTPStatus.OK
         assert response.json() == GET_CLASSIFIERS_OF_GROUP_RESPONSE_DICT
+
+
+@pytest.mark.asyncio
+@pytest.mark.groups
+async def test_get_group_splitters__ok(client: AsyncClient, group_id: str):
+    params = {"groupId": group_id}
+
+    with aioresponses() as mock_response:
+        mock_response.get(
+            f"{SPLITTING_SERVICE_SPLITTERS_URL}?{urllib.parse.urlencode(params)}",
+            status=HTTPStatus.OK,
+            payload=FIND_SPLITTERS_RESPONSE,
+        )
+
+        response = await client.get(f"{API_GATEWAY_GROUPS_V5_URL}/{group_id}/splitters")
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == FIND_SPLITTERS_RESPONSE
+
+
+@pytest.mark.asyncio
+@pytest.mark.groups
+async def test_get_groups__with_splittings__splitter_with_null_document_type_id__splitter_matched_to_group(
+    client: AsyncClient,
+):
+    groups_params = {"sortBy": "createdAt", "sortOrder": "desc"}
+    groups_url = f"{GROUPS_BASE_V1_URL}?{urllib.parse.urlencode(groups_params)}"
+    created_at = str(datetime.now())
+    groups_data = {
+        "meta": {"total": 1, "size": 1},
+        "result": [{"id": "group-id-1", "name": "Group 1", "documentTypeIds": [], "createdAt": created_at}],
+    }
+
+    with aioresponses() as mock_response:
+        mock_response.get(groups_url, status=HTTPStatus.OK, payload=groups_data)
+        mock_response.get(SPLITTING_SERVICE_SPLITTERS_URL, status=HTTPStatus.OK, payload=FIND_ALL_SPLITTERS_RESPONSE)
+
+        response = await client.get(API_GATEWAY_GROUPS_V5_URL, params={"extras": "splitters"})
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["result"][0]["splitter"] == FIND_ALL_SPLITTERS_RESPONSE["splitters"][0]  # type: ignore
+
+
+@pytest.mark.asyncio
+@pytest.mark.groups
+async def test_get_groups__with_splittings__splitter_has_document_type_id__splitter_not_matched(
+    client: AsyncClient,
+):
+    groups_params = {"sortBy": "createdAt", "sortOrder": "desc"}
+    groups_url = f"{GROUPS_BASE_V1_URL}?{urllib.parse.urlencode(groups_params)}"
+    created_at = str(datetime.now())
+    groups_data = {
+        "meta": {"total": 1, "size": 1},
+        "result": [{"id": "group-id-2", "name": "Group 2", "documentTypeIds": [], "createdAt": created_at}],
+    }
+
+    with aioresponses() as mock_response:
+        mock_response.get(groups_url, status=HTTPStatus.OK, payload=groups_data)
+        mock_response.get(SPLITTING_SERVICE_SPLITTERS_URL, status=HTTPStatus.OK, payload=FIND_ALL_SPLITTERS_RESPONSE)
+
+        response = await client.get(API_GATEWAY_GROUPS_V5_URL, params={"extras": "splitters"})
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["result"][0]["splitter"] is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.groups
+async def test_get_groups__with_splittings__no_matching_group__splitter_is_null(
+    client: AsyncClient,
+):
+    groups_params = {"sortBy": "createdAt", "sortOrder": "desc"}
+    groups_url = f"{GROUPS_BASE_V1_URL}?{urllib.parse.urlencode(groups_params)}"
+    created_at = str(datetime.now())
+    groups_data = {
+        "meta": {"total": 1, "size": 1},
+        "result": [{"id": "group-id-99", "name": "Group 99", "documentTypeIds": [], "createdAt": created_at}],
+    }
+
+    with aioresponses() as mock_response:
+        mock_response.get(groups_url, status=HTTPStatus.OK, payload=groups_data)
+        mock_response.get(SPLITTING_SERVICE_SPLITTERS_URL, status=HTTPStatus.OK, payload=FIND_ALL_SPLITTERS_RESPONSE)
+
+        response = await client.get(API_GATEWAY_GROUPS_V5_URL, params={"extras": "splitters"})
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["result"][0]["splitter"] is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.groups
+async def test_get_group_with_splitters_extra__ok(client: AsyncClient, group_id: str):
+    groups_url = f"{GROUPS_BASE_V1_URL}/{group_id}"
+    splitters_url = f"{SPLITTING_SERVICE_SPLITTERS_URL}?{urllib.parse.urlencode({'groupId': group_id})}"
+
+    group: dict[str, Any] = copy.deepcopy(GET_GROUP_RESPONSE_DICT)
+    group["group"]["genAiClassifiers"] = None
+    group["group"]["splitters"] = FIND_SPLITTERS_RESPONSE["splitters"]
+
+    with aioresponses() as mock_response:
+        mock_response.get(groups_url, status=HTTPStatus.OK, body=GET_GROUP_RESPONSE_JSON)
+        mock_response.get(splitters_url, status=HTTPStatus.OK, payload=FIND_SPLITTERS_RESPONSE)
+
+        response = await client.get(
+            f"{API_GATEWAY_GROUPS_V5_URL}/{group_id}",
+            params={"extras": GetGroupExtras.SPLITTERS.value},
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == group

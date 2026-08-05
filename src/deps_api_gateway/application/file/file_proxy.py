@@ -88,6 +88,7 @@ class IFileProxy(Protocol):
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None = None,
     ) -> ProxyResponse:
         pass
@@ -105,6 +106,7 @@ class IFileProxy(Protocol):
         needs_unifier: bool,
         needs_extraction: bool,
         assigned_to_me: bool,
+        needs_splitting_proposal_review: bool,
         metadata: dict[str, Any] | None = None,
     ) -> ProxyResponse:
         pass

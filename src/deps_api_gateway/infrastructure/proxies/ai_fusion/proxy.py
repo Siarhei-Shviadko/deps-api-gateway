@@ -11,7 +11,6 @@ from deps_api_gateway.application import (
     RawLLMWorkflow,
 )
 from deps_api_gateway.constants import AI_FUSION_BASE_PREFIX, V1_PREFIX
-from deps_api_gateway.domain import ContextAttachments
 
 from ..generic_rest_client import GenericRestClient
 from .exceptions import AIFusionError, AIFusionServiceUnavailableError
@@ -193,24 +192,12 @@ class AIFusionProxy(GenericRestClient, IAIFusionProxy):
         extractor_id: str,
         document_type_id: str,
         name: str,
-        custom_instruction: str,
-        grouping_factor: int,
-        temperature: float,
-        top_p: float,
-        page_span: Optional[dict[str, int]],
-        context_attachments: Optional[ContextAttachments],
+        extraction_params: dict[str, Any],
     ) -> ProxyResponse:
         url = f"{self.v1_prefix}/document-types/{document_type_id}/llm-extractors/{extractor_id}"
         data = {
             "name": name,
-            "extractionParams": {
-                "customInstruction": custom_instruction,
-                "groupingFactor": grouping_factor,
-                "temperature": temperature,
-                "topP": top_p,
-                "pageSpan": page_span,
-                "contextAttachments": context_attachments,
-            },
+            "extractionParams": extraction_params,
         }
         async with self._handling_exception(self.exception):
             return ProxyResponseFactory.make_response_from(await self.request(method=Methods.PUT, url=url, json=data))

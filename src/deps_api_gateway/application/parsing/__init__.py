@@ -1,3 +1,4 @@
+from .layout_type import *
 from .page_batch import *
 from .parsing_feature import *
 from .parsing_type import *
@@ -7,7 +8,8 @@ from .semantic_proxy import *
 from .service import *
 
 __all__ = (
-    page_batch.__all__
+    layout_type.__all__
+    + page_batch.__all__
     + parsing_feature.__all__
     + provider.__all__
     + parsing_type.__all__
