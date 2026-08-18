@@ -111,8 +111,26 @@ AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST = {
         "seed": 42,
         "logprobs": False,
         "extraModelParams": {"n": 5},
+        "coordinatesEnabled": True,
     },
     "contextAttachments": ContextAttachments.DOCUMENT_IMAGES,
+}
+
+AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES = {
+    "extractorName": "TestExtractor",
+    "documentTypeName": "test_llm_extraction",
+    "provider": "openai",
+    "model": "test_model",
+    "extractionParams": {
+        "customInstruction": "Give me summary",
+        "groupingFactor": 2,
+        "temperature": 0.4,
+        "topP": 0,
+        "stop": ["END", "\n"],
+        "seed": 42,
+        "logprobs": False,
+        "extraModelParams": {"n": 5},
+    },
 }
 
 AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_JSON = json.dumps(
@@ -125,6 +143,24 @@ AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_DICT = {
 }
 
 AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST = {
+    "name": "newname",
+    "extractionParams": {
+        "customInstruction": "new_instruction",
+        "groupingFactor": 3,
+        "temperature": 0.5,
+        "topP": 0.5,
+        "maxTokens": 4096,
+        "stop": ["END", "\n"],
+        "seed": 42,
+        "logprobs": False,
+        "extraModelParams": {"n": 5},
+        "pageSpan": {"start": 3, "end": 5},
+        "contextAttachments": ContextAttachments.DOCUMENT_IMAGES,
+        "coordinatesEnabled": True,
+    },
+}
+
+AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES = {
     "name": "newname",
     "extractionParams": {
         "customInstruction": "new_instruction",
@@ -152,12 +188,14 @@ AI_FUSION_GET_LLM_EXTRACTORS_RESPONSE_DICT = {
                 "groupingFactor": 5,
                 "temperature": 0.5,
                 "topP": 0.5,
+                "coordinatesEnabled": True,
             },
             "queries": [AI_FUSION_SERIALIZED_QUERY_RESPONSE_DICT],
         },
     ],
 }
 AI_FUSION_GET_LLM_EXTRACTORS_RESPONSE_JSON = json.dumps(AI_FUSION_GET_LLM_EXTRACTORS_RESPONSE_DICT)
+
 EXPECTED_LLM_EXTRACTORS_IN_DOCUMENT_TYPE_RESPONSE = [
     {
         "extractorId": "04d8c61728be419f80c0c6cb324e7f63",
@@ -171,10 +209,51 @@ EXPECTED_LLM_EXTRACTORS_IN_DOCUMENT_TYPE_RESPONSE = [
             "groupingFactor": 5,
             "temperature": 0.5,
             "topP": 0.5,
+            "coordinatesEnabled": True,
         },
         "queries": [AI_FUSION_SERIALIZED_QUERY_RESPONSE_DICT],
     },
 ]
+
+EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS = {
+    "customInstruction": "Give me summary",
+    "groupingFactor": 2,
+    "temperature": 0.4,
+    "topP": 0,
+    "maxTokens": None,
+    "stop": ["END", "\n"],
+    "seed": 42,
+    "logprobs": False,
+    "extraModelParams": {"n": 5},
+    "pageSpan": None,
+    "contextAttachments": None,
+    "coordinatesEnabled": True,
+}
+
+EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED = {
+    **EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS,
+    "coordinatesEnabled": False,
+}
+
+EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS = {
+    "customInstruction": "new_instruction",
+    "groupingFactor": 3,
+    "temperature": 0.5,
+    "topP": 0.5,
+    "maxTokens": 4096,
+    "stop": ["END", "\n"],
+    "seed": 42,
+    "logprobs": False,
+    "extraModelParams": {"n": 5},
+    "pageSpan": {"start": 3, "end": 5},
+    "contextAttachments": ContextAttachments.DOCUMENT_IMAGES.value,
+    "coordinatesEnabled": True,
+}
+
+EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED = {
+    **EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS,
+    "coordinatesEnabled": False,
+}
 
 AI_FUSION_CREATE_QUERY_REQUEST = {
     "code": uuid4().hex,

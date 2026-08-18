@@ -10,17 +10,18 @@ class GroupsConsolidator:
     def consolidate_groups(
         cls,
         groups_response: ProxyResponse,
-        splittings_response: ProxyResponse,
+        splittings_response: Optional[ProxyResponse],
     ) -> ProxyResponse:
         if not groups_response.is_ok():
             return groups_response
 
-        if cls._extra_response_invalid(splittings_response):
-            return splittings_response
+        splitters: list[dict[str, Any]]
+        if splittings_response is None or cls._extra_response_invalid(splittings_response):
+            splitters = []
+        else:
+            splitters = splittings_response.json()["splitters"]  # type: ignore
 
-        splitters: list[dict[str, Any]] = splittings_response.json()["splitters"]  # type: ignore
         splitter_by_group_id = {s["groupId"]: s for s in splitters if s.get("documentTypeId") is None}
-
         groups: dict[str, Any] = groups_response.json()  # type: ignore
         for group in groups["result"]:
             group["splitter"] = splitter_by_group_id.get(group["id"])
@@ -90,7 +91,7 @@ class GroupsConsolidator:
         )
 
         group["group"]["splitters"] = (
-            None
+            []
             if splitter_response is None or splitter_response.is_not_found()
             else splitter_response.json()["splitters"]  # type: ignore
         )

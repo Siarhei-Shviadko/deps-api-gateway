@@ -1,5 +1,8 @@
 import asyncio
-from typing import Optional, TypedDict
+import logging
+from typing import Awaitable, Optional, TypedDict
+
+from deps_api_gateway.domain.exceptions import BaseApiGatewayException
 
 from ..iproxies import IClassificationProxy
 from ..proxy_response import ProxyResponse
@@ -19,7 +22,7 @@ class _GroupsResponse(TypedDict, total=True):
 
 class _GetGroupResponses(_GroupsResponse, total=False):
     classification_response: ProxyResponse
-    splitter_response: ProxyResponse
+    splitter_response: Optional[ProxyResponse]
 
 
 class GroupService:
@@ -32,6 +35,8 @@ class GroupService:
         self._groups_proxy = groups_proxy
         self._classification_proxy = classification_proxy
         self._splitter_proxy = splitter_proxy
+
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     async def get_groups(
         self,
@@ -68,7 +73,7 @@ class GroupService:
                 sort_by=sort_by,
                 sort_order=sort_order,
             ),
-            self._splitter_proxy.find_splitters(),
+            self._find_splitters_safely(),
         )
 
         return GroupsConsolidator.consolidate_groups(
@@ -160,10 +165,22 @@ class GroupService:
     async def get_splitters(self, group_id: str) -> ProxyResponse:
         return await self._splitter_proxy.find_splitters(group_id)
 
+    async def _find_splitters_safely(self, group_id: Optional[str] = None) -> Optional[ProxyResponse]:
+        try:
+            return await self._splitter_proxy.find_splitters(group_id)
+        except BaseApiGatewayException:
+            self._logger.warning(
+                "Failed to fetch splitters for group_id=%s; falling back to no splitter data",
+                group_id,
+            )
+            return None
+
     async def _gather_get_group_requests(
         self, group_id: str, extras: Optional[list[GetGroupExtras]]
     ) -> _GetGroupResponses:
-        coroutines = {"groups_response": self._groups_proxy.get_group(group_id)}
+        coroutines: dict[str, Awaitable[Optional[ProxyResponse]]] = {
+            "groups_response": self._groups_proxy.get_group(group_id)
+        }
 
         if extras:
             if GetGroupExtras.CLASSIFIERS in extras:
@@ -171,6 +188,6 @@ class GroupService:
                     group_id
                 )
             if GetGroupExtras.SPLITTERS in extras:
-                coroutines["splitter_response"] = self._splitter_proxy.find_splitters(group_id)
+                coroutines["splitter_response"] = self._find_splitters_safely(group_id)
 
         return _GetGroupResponses(zip(coroutines.keys(), await asyncio.gather(*coroutines.values())))  # type: ignore

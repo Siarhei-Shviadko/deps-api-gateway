@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 import pytest
 from aioresponses import aioresponses
+from async_rest_client.constants import Methods
+from yarl import URL
 
 from deps_api_gateway.constants import (
     AI_FUSION_BASE_PREFIX,
@@ -10,6 +12,7 @@ from deps_api_gateway.constants import (
 )
 from tests.data.ai_fusion_json_data import (
     AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST,
+    AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES,
     AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_DICT,
     AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_JSON,
     AI_FUSION_AVAILABLE_MODELS_RESPONSE_DICT,
@@ -25,6 +28,11 @@ from tests.data.ai_fusion_json_data import (
     AI_FUSION_SERIALIZED_QUERY_RESPONSE_DICT,
     AI_FUSION_SERIALIZED_QUERY_RESPONSE_JSON,
     AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST,
+    AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES,
+    EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS,
+    EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED,
+    EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS,
+    EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED,
 )
 
 AI_FUSION_BASE_URL = f"{AI_FUSION_BASE_PREFIX}{V1_PREFIX}"
@@ -224,7 +232,17 @@ async def test_update_extraction_query__ok(client, document_type_id: str, extrac
 
 @pytest.mark.asyncio
 @pytest.mark.ai_fusion
-async def test_attach_llm_extractor__ok(client):
+@pytest.mark.parametrize(
+    ("request_payload", "expected_extraction_params"),
+    [
+        (AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST, EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS),
+        (
+            AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES,
+            EXPECTED_CREATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED,
+        ),
+    ],
+)
+async def test_attach_llm_extractor__ok(client, request_payload, expected_extraction_params):
     fusion_url = f"{AI_FUSION_BASE_URL}/document-types/llm-extractors"
 
     with aioresponses() as mock_response:
@@ -232,16 +250,30 @@ async def test_attach_llm_extractor__ok(client):
 
         response = await client.post(
             f"{BASE_API_V5_PREFIX}/document-types/llm-extractor",
-            json=AI_FUSION_ATTACH_LLM_EXTRACTOR_REQUEST,
+            json=request_payload,
         )
 
         assert response.status_code == HTTPStatus.CREATED
         assert response.json() == AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_DICT
+        outbound = mock_response.requests.get((Methods.POST, URL(fusion_url)))[0].kwargs["json"]
+        assert outbound["extractionParams"] == expected_extraction_params
 
 
 @pytest.mark.asyncio
 @pytest.mark.ai_fusion
-async def test_update_llm_extractor__ok(client, document_type_id: str, extractor_id: str):
+@pytest.mark.parametrize(
+    ("request_payload", "expected_extraction_params"),
+    [
+        (AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST, EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS),
+        (
+            AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST_WITHOUT_COORDINATES,
+            EXPECTED_UPDATE_LLM_EXTRACTOR_EXTRACTION_PARAMS_OMITTED,
+        ),
+    ],
+)
+async def test_update_llm_extractor__ok(
+    client, document_type_id: str, extractor_id: str, request_payload, expected_extraction_params
+):
     fusion_url = f"{AI_FUSION_BASE_URL}/document-types/{document_type_id}/llm-extractors/{extractor_id}"
 
     with aioresponses() as mock_response:
@@ -249,11 +281,13 @@ async def test_update_llm_extractor__ok(client, document_type_id: str, extractor
 
         response = await client.put(
             f"{BASE_API_V5_PREFIX}/document-types/{document_type_id}/llm-extractors/{extractor_id}",
-            json=AI_FUSION_UPDATE_LLM_EXTRACTOR_REQUEST,
+            json=request_payload,
         )
 
         assert response.status_code == HTTPStatus.OK
         assert response.json() == AI_FUSION_ATTACH_LLM_EXTRACTOR_RESPONSE_DICT
+        outbound = mock_response.requests.get((Methods.PUT, URL(fusion_url)))[0].kwargs["json"]
+        assert outbound["extractionParams"] == expected_extraction_params
 
 
 @pytest.mark.asyncio

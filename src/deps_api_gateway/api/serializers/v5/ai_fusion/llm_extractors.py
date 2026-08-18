@@ -34,6 +34,11 @@ class SerializedLLMExtractionParams(BaseLLMParams):
     grouping_factor: int = Field(DEFAULT_GROUPING_FACTOR, alias="groupingFactor", ge=1)
     page_span: SerializedPageSpan | None = Field(None, alias="pageSpan")
     context_attachments: ContextAttachments | None = Field(None, alias="contextAttachments")
+    coordinates_enabled: bool = Field(
+        default=False,
+        alias="coordinatesEnabled",
+        description="Enables automatic source-coordinate enrichment for every query in the extractor",
+    )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -48,6 +53,7 @@ class SerializedLLMExtractionParams(BaseLLMParams):
             "extraModelParams": self.extra_model_params,
             "pageSpan": self.page_span.to_dict() if self.page_span else None,
             "contextAttachments": self.context_attachments.value if self.context_attachments else None,
+            "coordinatesEnabled": self.coordinates_enabled,
         }
 
 
@@ -81,6 +87,11 @@ class UpdateExtractorParams(BaseLLMParams):
     )
     page_span: SerializedPageSpan | None = Field(..., alias="pageSpan")
     context_attachments: ContextAttachments | None = Field(None, alias="contextAttachments")
+    coordinates_enabled: bool = Field(
+        default=False,
+        alias="coordinatesEnabled",
+        description="Enables automatic source-coordinate enrichment for every query in the extractor",
+    )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -95,6 +106,7 @@ class UpdateExtractorParams(BaseLLMParams):
             "extraModelParams": self.extra_model_params,
             "pageSpan": self.page_span.to_dict() if self.page_span else None,
             "contextAttachments": self.context_attachments.value if self.context_attachments else None,
+            "coordinatesEnabled": self.coordinates_enabled,
         }
 
 
