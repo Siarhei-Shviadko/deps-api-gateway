@@ -78,7 +78,7 @@ def test_consolidate_groups__groups_not_ok__returns_groups_response(
     assert result is groups_response
 
 
-def test_consolidate_groups__splittings_not_ok__returns_splittings_response(
+def test_consolidate_groups__splittings_not_ok__splitter_is_null(
     ok_proxy_response__maker,
     not_ok_proxy_response__maker,
 ) -> None:
@@ -90,4 +90,48 @@ def test_consolidate_groups__splittings_not_ok__returns_splittings_response(
         splittings_response=splittings_response,
     )
 
-    assert result is splittings_response
+    assert result.json()["result"][0]["splitter"] is None  # type: ignore
+
+
+def test_consolidate_groups__splittings_none__splitter_is_null(
+    ok_proxy_response__maker,
+) -> None:
+    groups_response = ok_proxy_response__maker({"meta": {"total": 1}, "result": [GROUP_1]})
+
+    result = GroupsConsolidator.consolidate_groups(
+        groups_response=groups_response,
+        splittings_response=None,
+    )
+
+    assert result.json()["result"][0]["splitter"] is None  # type: ignore
+
+
+def test_consolidate_group__splitter_response_none__splitters_are_empty_list(
+    ok_proxy_response__maker,
+) -> None:
+    groups_response = ok_proxy_response__maker({"group": {"id": "group-id-1", "name": "Group 1"}})
+
+    result = GroupsConsolidator.consolidate_group(
+        groups_response=groups_response,
+        classification_response=None,
+        splitter_response=None,
+    )
+
+    assert result.json()["group"]["splitters"] == []  # type: ignore
+    assert result.json()["group"]["genAiClassifiers"] is None  # type: ignore
+
+
+def test_consolidate_group__splitter_not_found__splitters_are_empty_list(
+    ok_proxy_response__maker,
+    not_ok_proxy_response__maker,
+) -> None:
+    groups_response = ok_proxy_response__maker({"group": {"id": "group-id-1", "name": "Group 1"}})
+    splitter_response = not_ok_proxy_response__maker(status_code=404, data={"error": "not found"})
+
+    result = GroupsConsolidator.consolidate_group(
+        groups_response=groups_response,
+        classification_response=None,
+        splitter_response=splitter_response,
+    )
+
+    assert result.json()["group"]["splitters"] == []  # type: ignore

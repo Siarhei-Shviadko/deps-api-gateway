@@ -126,7 +126,7 @@ async def test_get_group__ok(client: AsyncClient, group_id: str, extras: Optiona
 
     group: dict[str, Any] = copy.deepcopy(GET_GROUP_RESPONSE_DICT)
     group["group"]["genAiClassifiers"] = None
-    group["group"]["splitters"] = None
+    group["group"]["splitters"] = []
 
     data = {}
     if extras is not None:
